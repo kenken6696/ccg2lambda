@@ -123,8 +123,8 @@ function parse_depccg() {
     > ${parsed_dir}/${base_fname}.log.std \
     2> ${parsed_dir}/${base_fname}.log.err
   mv ${plain_dir}/${base_fname}.xml ${parsed_dir}/${base_fname}.tagged.xml
-  env PYTHONPATH=$depccg_dir/src:$PYTHONPATH \
-    python ja/rte.py \
+  env python3PATH=$depccg_dir/src:$python3PATH \
+    python3 ja/rte.py \
     ${depccg_dir}/../models/ja_headfinal \
     ${parsed_dir}/${base_fname}.tagged.xml \
     > ${parsed_dir}/${base_fname}.depccg.jigg.xml
@@ -133,7 +133,7 @@ function parse_depccg() {
 function semantic_parsing() {
   parser=$1
   sentences_basename=$2
-  python scripts/semparse.py \
+  python3 scripts/semparse.py \
     $parsed_dir/${sentences_basename}.${parser}.jigg.xml \
     $category_templates \
     $parsed_dir/${sentences_basename}.${parser}.sem.xml \
@@ -144,15 +144,15 @@ function semantic_parsing() {
 function proving() {
   parser=$1
   sentences_basename=$2
-  start_time=`python -c 'import time; print(time.time())'`
-    timeout 100 python scripts/prove.py \
+  start_time=`python3 -c 'import time; print(time.time())'`
+    timeout 100 python3 scripts/prove.py \
       ${parsed_dir}/${sentences_basename}.${parser}.sem.xml \
       --graph_out ${results_dir}/${sentences_basename}.${parser}.html \
       > ${results_dir}/${sentences_basename}.${parser}.answer \
       2> ${results_dir}/${sentences_basename}.${parser}.err
   rte_answer=`cat ${results_dir}/${sentences_basename}.${parser}.answer`
   echo "judging entailment for ${parsed_dir}/${sentences_basename}.${parser}.sem.xml $rte_answer"
-  proof_end_time=`python -c 'import time; print(time.time())'`
+  proof_end_time=`python3 -c 'import time; print(time.time())'`
   proving_time=`echo "${proof_end_time} - ${start_time}" | bc -l | \
        awk '{printf("%.2f\n",$1)}'`
   echo $proving_time > ${results_dir}/${sentences_basename}.time
